@@ -292,47 +292,6 @@ class Author implements \JsonSerializable {
 	}
 
 	/**
-	 * Inserts Author and author info into MySQL
-	 *
-	 * @param \PDO $pdo PDO connection object
-	 * @param \PDOException when MySQL related error occurs
-	 * @param \TypeError if $pdo is not a PDO connection object
-	 **/
-
-	public function insert(\PDO $pdo) : void {
-
-		//create query template
-		$query = "INSERT INTO author(authorId, authorAvatarUrl, authorActivationToken, authorEmail, authorHash, authorUsername) 
-						VALUES (:authorId, :authorAvatarUrl, :authorActivationToken, :authorEmail, :authorHash, :authorUsername)";
-		$statement = $pdo->prepare($query);
-
-		$parameters = ["authorId" => $this->authorId->getBytes(),"authorAvatarUrl" =>$this->authorAvatarUrl,"authorActivationToken" =>$this->authorActivationToken,
-								"authorEmail" =>$this->authorEmail, "authorHash" =>$this->authorHash, "authorUsername" =>$this->authorUsername];
-		$statement -> execute($parameters);
-	}
-
-	/**
-	 * deletes this author from MySQL
-	 *
-	 * @param \PDO $pdo PDO connection object
-	 * @throws \PDOExceptionwhen MySQL related errors occur
-	 * @throws \TypeError if $pdo is not a PDO connection object
-	 **/
-
-	public function delete(\PDO %pdo): void {
-
-		//create query template
-
-		$query = "DELETE FROM author WHERE authorId = :authorId";
-		$statement = $pdo->prepare($query);
-
-		//bind the member variables to the place holders
-		$parameters = ["authorId" => $this -> authorId -> getBytes()];
-		$statement -> execute
-}
-
-
-	/**
 	 * Specify data which should be serialized to JSON
 	 * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
 	 * @return mixed data which can be serialized by <b>json_encode</b>,
@@ -340,10 +299,6 @@ class Author implements \JsonSerializable {
 	 * @since 5.4.0
 	 */
 	public function jsonSerialize() {
-		$fields = get_object_vars($this);
-		$fields["authorId"] = $this->authorId->toString();
-		unset($fields["authorActivationToken"]);
-		unset($fields["authorHash"]);
-		return ($fields);
+		// TODO: Implement jsonSerialize() method.
 	}
 }
