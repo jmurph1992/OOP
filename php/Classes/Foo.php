@@ -292,6 +292,111 @@ class Author implements \JsonSerializable {
 	}
 
 	/**
+	 * inserts this author into the table
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when MySQL related error occurs
+	 * @throws \TypeError if $pdo is not a PDO connection
+	 **/
+
+	public function insert(\PDO $pdo) : void {
+
+		//create query template
+		$query = "INSERT INTO author(authorId, authorAvatarUrl, authorActivationToken, authorEmail, authorHash, authorUsername) 
+						VALUES(:authorId, :authorAvatarUrl, :authorActivationToken, :authorEmail, :authorHash, :authorUsername)";
+		$statement = $pdo -> prepare($query);
+
+		$parameters = ["authorId" => $this -> authorId -> getBytes(), "authorAvatarUrl" => $this -> authorAvatarUrl,
+								"authorActivationToken" => $this -> authorActivationToken, "authorEmail" => $this -> authorEmail,
+								"authorHash" => $this -> authorHash, "authorUsername" => $this -> authorUsername];
+		$statement -> execute($parameters);
+	}
+
+	/**
+	 * removes this author from MySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when MySQL related error occurs
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+
+	public function delete(\PDO $pdo) : void {
+
+		//create query template
+		$query = "DELETE FROM author WHERE authorId = :authorId";
+		$statement = $pdo -> prepare($query);
+
+		//bind the member variables to the place holder in the template
+		$parameters = ["authorId" => $this -> authorId -> getBytes()];
+		$statement ->execute($parameters);
+	}
+
+	/**
+	 * Updates the author in MySQL
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @throws \PDOException when MySQL related error occurs
+	 * @throws \TypeError if $pdo is not a PDO connection object
+	 **/
+
+	public function update(\PDO $pdo) : void {
+
+		//create query template
+		$query = "UPDATE author SET authorAvatarUrl = :authorAvatarUrl, authorActivationToken = :authorActivationToken, 
+						authorEmail = :authorEmail, authorHash = :authorHash, authorUsername = :authorUsername WHERE authorId = :authorId";
+		$statement = $pdo ->prepare($query);
+
+		//binds the member variables to the place holders in template
+		$parameters = ["authorId" => $this -> authorId ->getBytes(), "authorAvatarUrl" => $this -> authorAvatarUrl, "authorActivationToken" => $this -> authorActivationToken,
+								"authorEmail" => $this -> authorEmail, "authorHash" => $this -> authorHash, "authorUsername" => $this -> authorUsername];
+		$statement ->execute($parameters);
+	}
+
+	/**
+	 * Gets the author by authorId
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @param $authorId author Id to search for
+	 * @return author|null author or null if not found
+	 * @throws \PDOException when MySQL related error occurs
+	 * @throws \TypeError when a variable is not the correct data type
+	 **/
+
+	public static function getAuthorByAuthorId(\PDO $pdo) : ?Author {
+		//cleans author Id before searching
+		try{
+			$authorId = self::validateUuid($authorId);
+		} catch(\InvalidArgumentException | \RangeException | \Exception | \TypeError $exception) {
+				throw(new \PDOException($exception -> getMessage(), 0, $exception));
+		}
+
+		//create query template
+		$query = "SELECT authorId, authorAvatarUrl, authorActivationToken, authorEmail, authorHash, authorUsername FROM author
+						WHERE authorId = :authorId";
+		$statement = $pdo -> prepare($query);
+
+		//binds the author Id to the place holder
+		$parameters = ["authorId" => $authorId -> getBytes()];
+		$statement -> execute($parameters);
+
+		//grabs the author from MySQL
+		try {
+			$author = null;
+			$statement -> setFetchMode(\PDO::FETCH_ASSOC);
+			$row = $statement -> fetch();
+			if($row !== false) {
+
+				$author = new Author($row["authorId"], $row["authorAvatarUrl"], $row["authorActivationToken"], $row["authorEmail"], $row["authorHash"], $row["authorUsername"]);
+			}
+		} catch(\Exception $exception) {
+			// if the row couldn't be converted
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		return($author);
+	}
+
+
+	/**
 	 * Specify data which should be serialized to JSON
 	 * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
 	 * @return mixed data which can be serialized by <b>json_encode</b>,
