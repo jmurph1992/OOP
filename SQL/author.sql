@@ -1,5 +1,7 @@
 ALTER DATABASE jmurphy33 CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 
+DROP TABLE IF EXISTS author;
+
 create table author(
 	authorId binary(16) not null,
 	authorAvatarUrl varchar(255),

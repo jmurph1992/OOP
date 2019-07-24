@@ -303,7 +303,7 @@ class Author implements \JsonSerializable {
 
 		//create query template
 		$query = "INSERT INTO author(authorId, authorAvatarUrl, authorActivationToken, authorEmail, authorHash, authorUsername) 
-						VALUES(:authorId, :authorAvatarUrl, :authorActivationToken, :authorEmail, :authorHash, :authorUsername)";
+									VALUES(:authorId, :authorAvatarUrl, :authorActivationToken, :authorEmail, :authorHash, :authorUsername)";
 		$statement = $pdo -> prepare($query);
 
 		$parameters = ["authorId" => $this -> authorId -> getBytes(), "authorAvatarUrl" => $this -> authorAvatarUrl,
@@ -394,6 +394,107 @@ class Author implements \JsonSerializable {
 		}
 		return($author);
 	}
+
+	/**
+	 * get the author by activation token
+	 *
+	 * @param string $authorActivationToken
+	 * @param \PDO object $pdo
+	 * @return Author|null Profile or null if not found
+	 * @throws \PDOException when MySQL related errors
+	 * @throws \TypeError when variables are not the correct data type
+	 **/
+
+	public static function getAuthorByAuthorActivationToken(\PDO $pdo, string $authorActivationToken) : ?Author {
+		//make sure activation token is in the right format and that it is a string representation of hexadecimal
+		$authorActivationToken = trim($authorActivationToken);
+		if(ctype_xdigit($authorActivationToken) === false) {
+			throw(new \InvalidArgumentException("profile activation token is empty or in the wrong format"));
+		}
+
+		//create the query template
+		$query = "SELECT authorId, authorAvatarUrl, authorActivationToken, authorEmail, authorHash, authorUsername FROM author WHERE authorActivationToken = :authorActivationToken";
+		$statement = $pdo -> prepare($query);
+
+		//bind the author activation token to the placeholder in the template
+		$parameters = ["authorActivationToken" => $authorActivationToken];
+		$statement -> execute($parameters);
+
+		//grab the author form MySQL
+		try{
+			$author = null;
+			$statement->setFetchMode(\PDO::FETCH_ASSOC);
+			$row = $statement->fetch();
+			if($row !== false) {
+				$author = new Author($row["authorId"], $row["authorAvatar"], $row["authorActivationToken"], $row["authorEmail"], $row["authorHash"], $row["authorUsername"]);
+			}
+		} catch(\Exception $exception) {
+			//if the row couldn't be converted, rethrow it
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		return ($author);
+	}
+
+	/**
+	 *gets the author by email
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @param string $authorEmail email to search for
+	 * @return Author|null Author or null if not found
+	 * @throws \PDOException when MySQL related error occurs
+	 * @throws \TypeError when variables are not the correct data type
+	 **/
+
+	public static function getAuthorByAuthorEmail(\PDO $pdo, string $authorEmail): ?Author {
+		//sanitize the email before searching
+		$authorEmail = trim($authorEmail);
+		$authorEmail = filter_var($authorEmail, FILTER_VALIDATE_EMAIL);
+
+		if(empty($authorEmail) === true) {
+			throw(new \PDOException("Not a valid email"));
+		}
+
+		//create query template
+		$query = "SELECT authorId, authorAvatarUrl, authorActivationToken, authorEmail, authorHash, authorUsername FROM author WHERE authorEmail = :authorEmail";
+		$statement = $pdo -> prepare($query);
+
+		//bind the author id to the place holder in the template
+		$parameters = ["authorEmail" => $authorEmail];
+		$statement -> execute($parameters);
+
+		//grab the author from MySQL
+		try {
+			$author = null;
+			$statement->setFetchMode(\PDO::FETCH_ASSOC);
+			$row = $statement->fetch();
+			if($row !== false) {
+				$author = new Author($row["authorId"], $row["authorAvatarUrl"], $row["authorActivationToken"], $row["authorEmail"], $row["authorHash"], $row["authorUsername"]);
+			}
+		} catch(\Exception $exception) {
+			//if the row couldn't be converted, rethrow it
+			throw(new \PDOException($exception->getMessage(), 0, $exception));
+		}
+		return ($author);
+	}
+
+	/**
+	 * gets the author by username
+	 *
+	 * @param \PDO $pdo PDO connection object
+	 * @param string $authorUsername
+	 * @return \SplFixedArray of all profiles found
+	 * @throws \PDOException when MySQL related errors occur
+	 * @throws \TypeError when variables are not the correct data type
+	 **/
+
+	public static function getAuthorByAuthorUsername(\PDO $pdo, string $authorUsername) : \SplFixedArray {
+		//sanitize the username before searching
+		$authorUsername = trim($authorUsername);
+		$authorUsername = filter_var($authorUsername, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+		if(empty)
+	}
+
+
 
 
 	/**
