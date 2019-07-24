@@ -521,7 +521,6 @@ class Author implements \JsonSerializable {
 
 
 
-
 	/**
 	 * formats the state variables for JSON serialization
 	 *
