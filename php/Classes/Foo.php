@@ -362,7 +362,7 @@ class Author implements \JsonSerializable {
 	 * @throws \TypeError when a variable is not the correct data type
 	 **/
 
-	public static function getAuthorByAuthorId(\PDO $pdo) : ?Author {
+	public static function getAuthorByAuthorId(\PDO $pdo, $authorId) : ?Author {
 		//cleans author Id before searching
 		try{
 			$authorId = self::validateUuid($authorId);
