@@ -491,20 +491,47 @@ class Author implements \JsonSerializable {
 		//sanitize the username before searching
 		$authorUsername = trim($authorUsername);
 		$authorUsername = filter_var($authorUsername, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
-		if(empty)
+		if(empty($authorUsername) === true) {
+			throw(new \PDOException("Not a valid username"));
+		}
+
+		//create query template
+		$query = "SELECT authorId, authorAvatarUrl, authorActivationToken, authorEmail, authorHash, authorUsername FROM author WHERE authorUsername = :authorUsername";
+		$statement = $pdo->prepare($query);
+
+		//bind the author username to the place holder in the template
+		$parameters = ["authorUsername" => $authorUsername];
+		$statement -> execute($parameters);
+
+		$authors = new \SplFixedArray($statement->rowCount());
+		$statement ->setFetchMode(\PDO::FETCH_ASSOC);
+
+		while (($row = $statement->fetch()) !== false) {
+			try{
+				$author = new Author($row["authorId"], $row["authorAvatarUrl"], $row["authorActivationToken"], $row["authorEmail"], $row["authorHash"], $row["authorUsername"]);
+				$authors[$authors->key()] = $author;
+				$authors->next();
+			} catch(\Exception $exception) {
+				//if the row couldn't be converted, rethrow it
+				throw(new \PDOException($exception->getMessage(), 0, $exception));
+			}
+		}
+		return ($authors);
 	}
 
 
 
 
 	/**
-	 * Specify data which should be serialized to JSON
-	 * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
-	 * @return mixed data which can be serialized by <b>json_encode</b>,
-	 * which is a value of any type other than a resource.
-	 * @since 5.4.0
-	 */
+	 * formats the state variables for JSON serialization
+	 *
+	 * @return array resulting state variables to serialize
+	 **/
 	public function jsonSerialize() {
-		// TODO: Implement jsonSerialize() method.
+		$fields = get_object_vars($this);
+		$fields["authorID"] = $this ->authorId->toString();
+		unset($fields["authorActivationToken"]);
+		unset($fields["authorHash"]);
+		return ($fields);
 	}
 }
