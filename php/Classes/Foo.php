@@ -218,7 +218,7 @@ class Author implements \JsonSerializable {
 	}
 
 	/**
-	 * accessor method for profile hash
+	 * accessor method for author hash
 	 *
 	 * @return value of hash
 	 **/
@@ -250,7 +250,7 @@ class Author implements \JsonSerializable {
 		}
 
 		if (strlen($newAuthorHash) !== 97) {
-			throw(new \RangeException("Profile hash must be 97 characters"));
+			throw(new \RangeException("Author hash must be 97 characters"));
 		}
 
 		$this->authorHash = $newAuthorHash;
@@ -400,7 +400,7 @@ class Author implements \JsonSerializable {
 	 *
 	 * @param string $authorActivationToken
 	 * @param \PDO object $pdo
-	 * @return Author|null Profile or null if not found
+	 * @return Author|null Author or null if not found
 	 * @throws \PDOException when MySQL related errors
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
@@ -409,7 +409,7 @@ class Author implements \JsonSerializable {
 		//make sure activation token is in the right format and that it is a string representation of hexadecimal
 		$authorActivationToken = trim($authorActivationToken);
 		if(ctype_xdigit($authorActivationToken) === false) {
-			throw(new \InvalidArgumentException("profile activation token is empty or in the wrong format"));
+			throw(new \InvalidArgumentException("author activation token is empty or in the wrong format"));
 		}
 
 		//create the query template
@@ -482,7 +482,7 @@ class Author implements \JsonSerializable {
 	 *
 	 * @param \PDO $pdo PDO connection object
 	 * @param string $authorUsername
-	 * @return \SplFixedArray of all profiles found
+	 * @return \SplFixedArray of all authors found
 	 * @throws \PDOException when MySQL related errors occur
 	 * @throws \TypeError when variables are not the correct data type
 	 **/
